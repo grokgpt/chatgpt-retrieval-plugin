@@ -15,11 +15,30 @@ from models.models import (
     Source,
 )
 from services.date import to_unix_timestamp
+from google.cloud import secretmanager
+
+def get_all_secrets(project_id: str = "chatgpt-retrieval-plugin1") -> Dict[str, str]:
+    client = secretmanager.SecretManagerServiceClient()
+    project_name = f"projects/{project_id}"
+    secrets = {}
+
+    for secret in client.list_secrets(request={"parent": project_name}):
+        secret_version_path = client.secret_version_path(project_id, secret.name.split('/')[-1], "latest")
+        secret_response = client.access_secret_version(request={"name": secret_version_path})
+        secrets[secret.name.split('/')[-1]] = secret_response.payload.data.decode("UTF-8")
+
+    return secrets
+
+secrets = get_all_secrets()
+
 
 # Read environment variables for Pinecone configuration
-PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
-PINECONE_ENVIRONMENT = os.environ.get("PINECONE_ENVIRONMENT")
-PINECONE_INDEX = os.environ.get("PINECONE_INDEX")
+# PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
+# PINECONE_ENVIRONMENT = os.environ.get("PINECONE_ENVIRONMENT")
+# PINECONE_INDEX = os.environ.get("PINECONE_INDEX")
+PINECONE_API_KEY = secrets["PINECONE_API_KEY"]
+PINECONE_ENVIRONMENT = secrets["PINECONE_ENVIRONMENT"]
+PINECONE_INDEX = secrets["PINECONE_INDEX"]
 assert PINECONE_API_KEY is not None
 assert PINECONE_ENVIRONMENT is not None
 assert PINECONE_INDEX is not None
