@@ -29,7 +29,7 @@ def get_secret(secret_name: str, project_id: str = "chatgpt-retrieval-plugin1") 
 
 bearer_scheme = HTTPBearer()
 # BEARER_TOKEN = os.environ.get("BEARER_TOKEN")
-BEARER_TOKEN = get_secret("your_secret_name")
+BEARER_TOKEN = get_secret("BEARER_TOKEN")
 
 assert BEARER_TOKEN is not None
 
